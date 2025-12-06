@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Electronics Vendor - User Interfaces</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #000000;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            max-width: 800px;
+            width: 100%;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+        }
+        .interfaces {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .interface-card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 2px solid transparent;
+        }
+        .interface-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            border-color: #667eea;
+        }
+        .interface-card h2 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+        .interface-card p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        .interface-card a {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .interface-card a:hover {
+            background: #5568d3;
+        }
+        .customer-service { border-left: 4px solid #4CAF50; }
+        .online-customers { border-left: 4px solid #2196F3; }
+        .call-center { border-left: 4px solid #FF9800; }
+        .warehouse { border-left: 4px solid #9C27B0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Electronics Vendor System</h1>
+        <p class="subtitle">User Interface Portal</p>
+        
+        <div class="interfaces">
+            <div class="interface-card customer-service">
+                <h2>Customer Service</h2>
+                <p>Look up inventory at stores for customer inquiries</p>
+                <a href="/customer-service">Open Interface</a>
+            </div>
+            
+            <div class="interface-card online-customers">
+                <h2>Online Customers</h2>
+                <p>Web store for browsing and purchasing products</p>
+                <a href="/online-customers">Open Interface</a>
+            </div>
+            
+            <div class="interface-card call-center">
+                <h2>Call Center</h2>
+                <p>Customer lookup and phone order entry</p>
+                <a href="/call-center">Open Interface</a>
+            </div>
+            
+            <div class="interface-card warehouse">
+                <h2>Warehouse</h2>
+                <p>Inventory management and shipment tracking</p>
+                <a href="/warehouse">Open Interface</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+

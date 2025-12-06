@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ElectroMart - Online Store</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+        }
+        .header {
+            background: #2196F3;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .search-bar {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .search-bar input {
+            width: 70%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .search-bar button {
+            padding: 12px 24px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-left: 10px;
+        }
+        .search-bar button:hover {
+            background: #1976D2;
+        }
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .filters select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .product-card {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .product-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        .product-card .price {
+            color: #2196F3;
+            font-size: 20px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .product-card .manufacturer {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .product-card button {
+            width: 100%;
+            padding: 10px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .product-card button:hover {
+            background: #45a049;
+        }
+        .cart {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            min-width: 250px;
+        }
+        .cart h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .cart-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+        }
+        .cart-total {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 2px solid #333;
+            font-weight: bold;
+        }
+        .cart button {
+            width: 100%;
+            padding: 10px;
+            background: #FF9800;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .cart button:hover {
+            background: #F57C00;
+        }
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>ElectroMart - Electronics Store</h1>
+        <p>Shop the latest electronics and gadgets</p>
+    </div>
+
+    <div class="container">
+        <div style="background: #e3f2fd; padding: 15px; border-radius: 5px; margin-bottom: 20px; border-left: 4px solid #2196F3;">
+            <strong>Purpose:</strong> Web store for customers to browse and purchase products online. Search and filter products by category, add items to cart, and place orders. Customers can view all available products and complete purchases directly through this interface.
+        </div>
+        <div class="search-bar">
+            <input type="text" id="search-input" placeholder="Search products...">
+            <button onclick="searchProducts()">Search</button>
+            <div class="filters">
+                <select id="category-filter" onchange="searchProducts()">
+                    <option value="">All Categories</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="products-container" class="products-grid"></div>
+    </div>
+
+    <div class="cart">
+        <h3>Shopping Cart</h3>
+        <div id="cart-items"></div>
+        <div class="cart-total" id="cart-total">Total: $0.00</div>
+        <button onclick="checkout()">Checkout</button>
+    </div>
+
+    <script>
+        let cart = [];
+        let products = [];
+
+        window.onload = function() {
+            loadCategories();
+            loadProducts();
+        };
+
+        function loadCategories() {
+            fetch('http://localhost:8888/api/categories')
+                .then(response => response.json())
+                .then(data => {
+                    const select = document.getElementById('category-filter');
+                    data.forEach(cat => {
+                        const option = document.createElement('option');
+                        option.value = cat.CategoryID;
+                        option.textContent = cat.CategoryName;
+                        select.appendChild(option);
+                    });
+                });
+        }
+
+        function loadProducts() {
+            const search = document.getElementById('search-input').value;
+            const category = document.getElementById('category-filter').value;
+            
+            let url = `http://localhost:8888/api/products?page=1&per_page=50`;
+            if (search) url += `&search=${encodeURIComponent(search)}`;
+            if (category) url += `&category=${category}`;
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    products = data.products;
+                    displayProducts(products);
+                })
+                .catch(error => {
+                    document.getElementById('products-container').innerHTML = 
+                        `<div class="error">Error loading products: ${error.message}</div>`;
+                });
+        }
+
+        function searchProducts() {
+            loadProducts();
+        }
+
+        function displayProducts(productsList) {
+            const container = document.getElementById('products-container');
+            
+            if (productsList.length === 0) {
+                container.innerHTML = '<div class="error">No products found.</div>';
+                return;
+            }
+            
+            container.innerHTML = productsList.map(product => `
+                <div class="product-card">
+                    <h3>${product.ProductName}</h3>
+                    <div class="manufacturer">${product.Manufacturer}</div>
+                    <div class="price">$${parseFloat(product.UnitPrice).toFixed(2)}</div>
+                    <p style="font-size: 12px; color: #666; margin: 10px 0;">${product.Description ? product.Description.substring(0, 100) + '...' : ''}</p>
+                    <button onclick="addToCart('${product.UPC}')">Add to Cart</button>
+                </div>
+            `).join('');
+        }
+
+        function addToCart(upc) {
+            const product = products.find(p => p.UPC === upc);
+            if (!product) return;
+            
+            const existingItem = cart.find(item => item.upc === upc);
+            if (existingItem) {
+                existingItem.quantity++;
+            } else {
+                cart.push({
+                    upc: upc,
+                    name: product.ProductName,
+                    price: parseFloat(product.UnitPrice),
+                    quantity: 1
+                });
+            }
+            
+            updateCart();
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCart();
+        }
+
+        function updateCart() {
+            const cartItems = document.getElementById('cart-items');
+            const cartTotal = document.getElementById('cart-total');
+            
+            if (cart.length === 0) {
+                cartItems.innerHTML = '<p>Cart is empty</p>';
+                cartTotal.textContent = 'Total: $0.00';
+                return;
+            }
+            
+            let total = 0;
+            cartItems.innerHTML = cart.map((item, index) => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                return `
+                    <div class="cart-item">
+                        <span>${item.name} x${item.quantity}</span>
+                        <span>$${itemTotal.toFixed(2)}</span>
+                        <button onclick="removeFromCart(${index})" style="background: #f44336; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; margin-left: 10px;">Remove</button>
+                    </div>
+                `;
+            }).join('');
+            
+            cartTotal.textContent = `Total: $${total.toFixed(2)}`;
+        }
+
+        function checkout() {
+            if (cart.length === 0) {
+                alert('Your cart is empty!');
+                return;
+            }
+            
+            const customerId = prompt('Enter Customer ID (for demo, use 1-13):');
+            if (!customerId) return;
+            
+            const orderData = {
+                customer_id: parseInt(customerId),
+                order_type: 'Online',
+                payment_method: 'Credit Card',
+                items: cart.map(item => ({
+                    upc: item.upc,
+                    quantity: item.quantity
+                }))
+            };
+            
+            fetch('http://localhost:8888/api/order/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(orderData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                } else {
+                    const total = typeof data.total === 'number' ? data.total : parseFloat(data.total);
+                    alert(`Order placed successfully! Order ID: ${data.order_id}\nTotal: $${total.toFixed(2)}`);
+                    cart = [];
+                    updateCart();
+                    loadProducts(); // Refresh product list
+                }
+            })
+            .catch(error => {
+                alert('Error placing order: ' + error.message);
+            });
+        }
+
+        // Allow Enter key to search
+        document.getElementById('search-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchProducts();
+            }
+        });
+    </script>
+</body>
+</html>
+
