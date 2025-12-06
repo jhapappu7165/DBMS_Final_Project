@@ -137,15 +137,18 @@
         </div>
         
         <div class="tabs">
-            <button class="tab active" onclick="showTab('inventory')">Inventory</button>
-            <button class="tab" onclick="showTab('shipments')">Shipments</button>
-            <button class="tab" onclick="showTab('reorders')">Reorders</button>
-            <button class="tab" onclick="showTab('update')">Update Inventory</button>
+            <button class="tab active" onclick="showTab('inventory'); event.stopPropagation();">Inventory</button>
+            <button class="tab" onclick="showTab('shipments'); event.stopPropagation();">Shipments</button>
+            <button class="tab" onclick="showTab('reorders'); event.stopPropagation();">Reorders</button>
+            <button class="tab" onclick="showTab('update'); event.stopPropagation();">Update Inventory</button>
         </div>
 
         <!-- Inventory Tab -->
         <div id="inventory-tab" class="tab-content active">
             <p style="color: #666; margin-bottom: 15px;"><em>Note: This shows warehouse inventory (bulk stock for distribution). Store inventory (for customers) is shown in the Customer Service interface.</em></p>
+            <p style="background: #fff3cd; padding: 10px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid #ffc107;">
+                <strong>Low Stock Threshold:</strong> Products are marked as "Low Stock" when quantity ≤ Reorder Level. Each product has its own reorder level (shown in the table). Status: <span style="color: #4CAF50;">In Stock</span> = Above reorder level, <span style="color: #f44336;">Low Stock</span> = At or below reorder level, <span style="color: #f44336;">Out of Stock</span> = Quantity is 0.
+            </p>
             <div class="form-section">
                 <div class="form-group">
                     <label for="warehouse-filter">Filter by Warehouse:</label>
@@ -160,6 +163,9 @@
 
         <!-- Shipments Tab -->
         <div id="shipments-tab" class="tab-content">
+            <p style="background: #e3f2fd; padding: 10px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid #2196F3;">
+                <strong>Note:</strong> Shipments are created when orders are actually shipped to customers. New orders appear in customer order history but don't automatically create shipments. Shipments are created separately when warehouse staff prepares and ships the order. This shows all shipments that have been created and tracked.
+            </p>
             <button onclick="loadShipments()">Refresh Shipments</button>
             <div id="shipments-results"></div>
         </div>
@@ -172,6 +178,9 @@
 
         <!-- Update Inventory Tab -->
         <div id="update-tab" class="tab-content">
+            <p style="background: #e8f5e9; padding: 10px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid #4CAF50;">
+                <strong>How it works:</strong> When new products arrive at the warehouse from vendors, use this form to update inventory. Enter the UPC, select warehouse, and quantity received. After updating, the new quantity will appear in the Inventory tab. The system automatically adds the received quantity to existing inventory.
+            </p>
             <div class="form-section">
                 <h3>Record Incoming Shipment</h3>
                 <div class="form-group">
@@ -218,7 +227,18 @@
             
             // Show selected tab
             document.getElementById(tabName + '-tab').classList.add('active');
-            event.target.classList.add('active');
+            // Update active button - handle both click events and programmatic calls
+            if (event && event.target && event.target.classList.contains('tab')) {
+                event.target.classList.add('active');
+            } else {
+                // Programmatic call - find the correct button
+                const tabButtons = document.querySelectorAll('.tab');
+                const tabNames = ['inventory', 'shipments', 'reorders', 'update'];
+                const tabIndex = tabNames.indexOf(tabName);
+                if (tabIndex >= 0 && tabButtons[tabIndex]) {
+                    tabButtons[tabIndex].classList.add('active');
+                }
+            }
             
             // Update purpose text
             document.getElementById('purpose-text').textContent = tabPurposes[tabName];
@@ -437,16 +457,16 @@
                 if (data.error) {
                     messageDiv.innerHTML = `<div class="error">Error: ${data.error}</div>`;
                 } else {
-                    messageDiv.innerHTML = `<div class="success">${data.message}</div>`;
+                    messageDiv.innerHTML = `<div class="success">${data.message} - Inventory updated successfully! Check the Inventory tab to see the updated quantities.</div>`;
                     // Clear form
                     document.getElementById('update-upc').value = '';
                     document.getElementById('update-warehouse').value = '';
                     document.getElementById('update-quantity').value = '';
-                    // Refresh inventory
+                    // Refresh inventory tab automatically
                     setTimeout(() => {
                         showTab('inventory');
                         loadInventory();
-                    }, 1000);
+                    }, 1500);
                 }
             })
             .catch(error => {

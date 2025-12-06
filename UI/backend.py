@@ -614,6 +614,47 @@ def update_reorder_status():
         conn.rollback()
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/orders/<int:order_id>', methods=['GET'])
+def get_order_details(order_id):
+    """Get detailed order information including items"""
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({'error': 'Database connection failed'}), 500
+    
+    try:
+        cursor = conn.cursor(dictionary=True)
+        
+        # Get order info
+        cursor.execute("""
+            SELECT OrderID, CustomerID, OrderDate, OrderType, TotalAmount, Status, PaymentMethod
+            FROM `Order`
+            WHERE OrderID = %s
+        """, (order_id,))
+        order = cursor.fetchone()
+        
+        if not order:
+            return jsonify({'error': 'Order not found'}), 404
+        
+        # Get order items
+        cursor.execute("""
+            SELECT oi.UPC, p.ProductName, oi.Quantity, oi.UnitPrice, oi.Subtotal
+            FROM OrderItem oi
+            JOIN Product p ON oi.UPC = p.UPC
+            WHERE oi.OrderID = %s
+            ORDER BY p.ProductName
+        """, (order_id,))
+        items = cursor.fetchall()
+        
+        cursor.close()
+        conn.close()
+        
+        return jsonify({
+            'order': order,
+            'items': items
+        })
+    except Error as e:
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
     # Check if MySQL is accessible
     conn = get_db_connection()
