@@ -1,0 +1,245 @@
+---------E-R DIAGRAM ------------
+
+┌─────────────────────────────────┐
+│         VENDOR                  │
+├─────────────────────────────────┤
+│ PK VendorID                     │
+│    VendorName                   │
+│    ContactPerson                │
+│    Email                        │
+│    Phone                        │
+│    Address                      │
+│    City, State, ZipCode         │
+└─────────────────────────────────┘
+            │
+            │ 1
+            │
+            │ SuppliedBy
+            │
+            │ M
+            ▼
+┌─────────────────────────────────┐
+│         PRODUCT                 │
+├─────────────────────────────────┤
+│ PK UPC                          │
+│    ProductName                  │
+│    Description                  │
+│    UnitPrice                    │
+│    Manufacturer                 │
+│    ModelNumber                  │
+│    Weight, Dimensions           │
+│ FK VendorID                     │
+└─────────────────────────────────┘
+    │                    │
+    │ M                  │ M
+    │                    │
+    │ BelongsTo          │ StoredAt
+    │                    │
+    │                    │ M
+    │                    ▼
+    │         ┌─────────────────────────────────┐
+    │         │       INVENTORY                 │
+    │         ├─────────────────────────────────┤
+    │         │ PK (UPC, LocationType,          │
+    │         │      LocationID)                │
+    │         │    Quantity                     │
+    │         │    ReorderLevel                 │
+    │         │    LastUpdated                  │
+    │         └─────────────────────────────────┘
+    │                    │
+    │                    │ 1
+    │                    │
+    │                    │ Triggers
+    │                    │
+    │                    │ M
+    │                    ▼
+    │         ┌─────────────────────────────────┐
+    │         │       REORDER                   │
+    │         ├─────────────────────────────────┤
+    │         │ PK ReorderID                    │
+    │         │    Quantity                     │
+    │         │    OrderDate                    │
+    │         │    Status                       │
+    │         │    ExpectedDeliveryDate         │
+    │         │    ReceivedDate                 │
+    │         │    UnitCost                     │
+    │         │ FK UPC                          │
+    │         │ FK VendorID                     │
+    │         └─────────────────────────────────┘
+    │                    │
+    │                    │ M
+    │                    │
+    │                    │ Receives
+    │                    │
+    │                    │ 1
+    │                    │
+    │                    └────────────────────┐
+    │                                         │
+    │                                         │
+    │ M                                       │
+    │                                         │
+    │ BelongsTo                               │
+    │                                         │
+    ▼                                         │
+┌─────────────────────────────────┐           │
+│        CATEGORY                 │           │
+├─────────────────────────────────┤           │
+│ PK CategoryID                   │           │
+│    CategoryName                 │           │
+│    CategoryType                 │           │
+│    Description                  │           │
+└─────────────────────────────────┘           │
+                                              │
+                                              │
+┌─────────────────────────────────┐           │
+│        CUSTOMER                 │           │
+├─────────────────────────────────┤           │
+│ PK CustomerID                   │           │
+│    FirstName, LastName          │           │
+│    Email, Phone                 │           │
+│    Address, City, State, Zip    │           │
+│    CustomerType                 │           │
+│    AccountNumber (nullable)     │           │
+│    CreditCardNumber (nullable)  │           │
+│    CreditCardExpiry (nullable)  │           │
+│    CreditCardCVV (nullable)     │           │
+└─────────────────────────────────┘           │
+            │                                 │
+            │ 1                               │
+            │                                 │
+            │ Places                          │
+            │                                 │
+            │ M                               │
+            ▼                                 │
+┌─────────────────────────────────┐           │
+│         ORDER                   │           │
+├─────────────────────────────────┤           │
+│ PK OrderID                      │           │
+│    OrderDate                    │           │
+│    OrderType                    │           │
+│    TotalAmount                  │           │
+│    Status                       │           │
+│    PaymentMethod                │           │
+│ FK CustomerID                   │           │
+│ FK StoreID (nullable)           │           │
+└─────────────────────────────────┘           │
+    │                    │                    │
+    │ 1                  │ 1                  │
+    │                    │                    │
+    │ Contains           │ ShippedAs          │
+    │                    │                    │
+    │ M                  │ 1                  │
+    ▼                    ▼                    │
+┌─────────────────────────────────┐  ┌─────────────────────────────────┐
+│      ORDERITEM                  │  │       SHIPMENT                  │
+├─────────────────────────────────┤  ├─────────────────────────────────┤
+│ PK (OrderID, UPC)               │  │ PK ShipmentID                   │
+│    Quantity                     │  │    TrackingNumber (UNIQUE)      │
+│    UnitPrice                    │  │    Carrier                      │
+│    Subtotal                     │  │    ShippedDate                  │
+│ FK OrderID                      │  │    PromisedDeliveryDate         │
+│ FK UPC                          │  │    ActualDeliveryDate           │
+└─────────────────────────────────┘  │    Status                       │
+            │                        │    ShippingAddress              │
+            │ M                      │    ShippingCity, State, Zip     │
+            │                        │ FK OrderID (UNIQUE)             │
+            │ OrderedAs              └─────────────────────────────────┘
+            │
+            │ 1
+            │
+            └──────────────────────┐
+                                   │
+                                   │
+┌─────────────────────────────────┐│
+│         STORE                   ││
+├─────────────────────────────────┤│
+│ PK StoreID                      ││
+│    StoreName                    ││
+│    Address                      ││
+│    City, State, ZipCode         ││
+│    Phone                        ││
+│    ManagerName                  ││
+└─────────────────────────────────┘│
+            │                      │
+            │ 1                    │
+            │                      │
+            │ Processes            │
+            │                      │
+            │ M (optional)         │
+            │                      │
+            └──────────────────────┘
+
+┌─────────────────────────────────┐
+│       WAREHOUSE                 │
+├─────────────────────────────────┤
+│ PK WarehouseID                  │
+│    WarehouseName                │
+│    Address                      │
+│    City, State, ZipCode         │
+│    Phone                        │
+│    ManagerName                  │
+└─────────────────────────────────┘
+
+
+--------- RELATIONSHIP SUMMARY ------------
+
+1. Vendor (1) ──< SuppliedBy >── (M) Product
+   - Each product supplied by one vendor
+   - Each vendor supplies many products
+
+2. Product (M) ──< BelongsTo >── (M) Category
+   - Many-to-many via ProductCategory junction table
+   - Product can be in multiple categories
+   - Category contains many products
+
+3. Customer (1) ──< Places >── (M) Order
+   - Customer can place many orders
+   - Each order belongs to one customer
+
+4. Store (1) ──< Processes >── (M) Order (optional)
+   - Store processes in-store orders
+   - Order.StoreID is nullable (for online/phone orders)
+
+5. Order (1) ──< Contains >── (M) OrderItem
+   - Order contains many items
+   - Each item belongs to one order
+
+6. Product (1) ──< OrderedAs >── (M) OrderItem
+   - Product can appear in many order items
+   - Each order item references one product
+
+7. Order (1) ──< ShippedAs >── (1) Shipment
+   - One-to-one: online order has one shipment
+   - Shipment belongs to one order
+
+8. Product (1) ──< StoredAt >── (M) Inventory
+   - Product can have inventory at multiple locations
+   - Each inventory record is for one product at one location
+
+9. Inventory (1) ──< Triggers >── (M) Reorder
+   - Low inventory triggers reorders
+   - Multiple reorders possible per inventory location
+
+10. Vendor (1) ──< Receives >── (M) Reorder
+    - Vendor receives many reorder requests
+    - Each reorder sent to one vendor
+
+
+
+--------- CARDINALITY NOTATION --------------
+
+(1) = One
+(M) = Many
+(1,1) = Exactly one (mandatory)
+(0,1) = Zero or one (optional)
+(1,M) = One to many
+(M,M) = Many to many
+
+
+---------- LEGENDS ---------------------------
+
+PK = Primary Key
+FK = Foreign Key
+UNIQUE = Unique constraint
+nullable = Can be NULL
+NOT NULL = Required field
